@@ -4,6 +4,7 @@ module BalmIroned
 
 export play
 
+include("exceptions.jl")
 include("storage.jl")
 include("scheme.jl")
 include("card.jl")

@@ -41,8 +41,7 @@ function terminate(deck)
 	starhands = sum(star.(deck.hands))
 	starqueue = sum(star.(deck.queue))
 	startotal = starhands + starqueue
-	@info "You get $startotal stars in this game!  ﾟ∀ﾟ)σ"
-	return nothing
+	throw(GameOver(startotal))
 end
 
 function checkqueuetop!(deck::Deck)
@@ -89,7 +88,7 @@ function costcombs(cost::Storagez, storages::AbstractVector{<:Storagez})
 			end
 		end
 	end
-	@assert any(coverables)
+	any(coverables) || throw(UncoverableError())
 	return indsubsets[coverables]
 end
 
@@ -100,17 +99,16 @@ function costcomb(cost::Storagez, deck::Deck)
 	if length(indsubsets) == 1
 		return indsubsets[1]
 	else
-		@warn "Suggested <queue#...>: $(join(indsubsets, "; "))"
-		error()
+		throw(AmbiguityError(indsubsets))
 	end
 end
 
 function operatehand!(deck::Deck, operate, operatecost, hi, qii)
 	checkqueuetop!(deck)
-	@assert in(hi, 1:2)
+	in(hi, 1:2) || throw(HandIndexError())
 	cost = operatecost(deck.hands[hi])
-	@assert issubset(qii, 1:15)
-	@assert all(isstored.(deck.queue[qii]))
+	issubset(qii, 1:15) || throw(QueueIndexError())
+	all(isstored.(deck.queue[qii])) || throw(CardUnstoredError())
 	if isempty(qii)
 		qii = costcomb(cost, deck)
 	end
@@ -123,7 +121,7 @@ function operatehand!(deck::Deck, operate, operatecost, hi, qii)
 end
 
 function storehand!(deck::Deck, hi, qii=[])
-	@assert count(isstored.(deck.queue)) <= 3
+	count(isstored.(deck.queue)) <= 3 || throw(StoreFullError())
 	return operatehand!(deck, store, storecost, hi, qii)
 end
 
@@ -133,15 +131,15 @@ fliphand!(deck::Deck, hi, qii=[]) = operatehand!(deck, flip, flipcost, hi, qii)
 
 function passhand!(deck::Deck, hi)
 	checkqueuetop!(deck)
-	@assert in(hi, 1:2)
+	in(hi, 1:2) || throw(HandIndexError())
 	push!(deck.queue, deck.hands[hi])
 	deck.hands[hi] = popat!(deck.queue, 1)
 	return deck
 end
 
 function unstorequeue!(deck::Deck, qi)
-	@assert in(qi, 1:15)
-	@assert isstored(deck.queue[qi])
+	in(qi, 1:15) || throw(QueueIndexError())
+	isstored(deck.queue[qi]) || throw(CardUnstoredError())
 	deck.queue[qi] = store(deck.queue[qi])
 	return deck
 end
