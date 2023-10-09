@@ -65,6 +65,7 @@ function exec!(deck, line)
 			@warn "Command must start with C/F/P/R/S/U/Q"
 		else
 			showerror(e)
+			println(e)
 		end
 		println('\n', HELPTEXT, '\n')
 		return waitcommand!(deck)
@@ -86,6 +87,7 @@ function play()
 			display(deck)
 			deck = waitcommand!(deck)
 		catch e
+			println(e)
 			break
 		end
 	end
