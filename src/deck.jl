@@ -64,13 +64,55 @@ function checkqueuetop!(deck::Deck)
 	return deck
 end
 
+function powerset(collection::AbstractVector{T}) where T
+	results = [T[]]
+	for element = collection
+		append!(results, vcat.(results, [element]))
+	end
+	return results
+end
+
+function costcombs(cost::Storagez, storages::AbstractVector{<:Storagez})
+	indsubsets = powerset(eachindex(storages))
+	powers = getindex.([storages], indsubsets)
+	coverables = trues(size(powers))
+	for i = eachindex(powers)
+		if coverables[i]
+			if cost <= sum(powers[i])
+				for j = eachindex(powers)
+					if j != i && issubset(indsubsets[i], indsubsets[j])
+						coverables[j] = false
+					end
+				end
+			else
+				coverables[i] = false
+			end
+		end
+	end
+	@assert any(coverables)
+	return indsubsets[coverables]
+end
+
+function costcomb(cost::Storagez, deck::Deck)
+	qii = filter(i -> isstored(deck.queue[i]), 1:15)
+	storages = storage.(deck.queue[qii])
+	indsubsets = getindex.([qii], costcombs(cost, storages))
+	if length(indsubsets) == 1
+		return indsubsets[1]
+	else
+		@warn "Suggested <queue#...>: $(join(indsubsets, "; "))"
+		error()
+	end
+end
+
 function operatehand!(deck::Deck, operate, operatecost, hi, qii)
 	@assert in(hi, 1:2)
+	cost = operatecost(deck.hands[hi])
 	@assert issubset(qii, 1:15)
 	@assert all(isstored.(deck.queue[qii]))
-	cost = operatecost(deck.hands[hi])
-	deposit = getdeposit(deck, qii)
-	@assert cost <= deposit
+	if isempty(qii)
+		qii = costcomb(cost, deck)
+	end
 	for qi = qii
 		deck.queue[qi] = store(deck.queue[qi])
 	end
