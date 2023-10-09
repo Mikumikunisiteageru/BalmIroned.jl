@@ -7,6 +7,7 @@ P <hand#>                Pass card
 Q                        Quit immediately
 R <hand#> <queue#...>    Rotate card and pay the cost from storage in queue
 S <hand#> <queue#...>    Store card and pay the cost from storage in queue
+U <queue#>               Unstore a stored card in queue 
 "[2:end-1]
 
 function exec!(deck, cmd, args)
@@ -28,6 +29,9 @@ function exec!(deck, cmd, args)
 		elseif cmd == "S"
 			@assert length(args) >= 1
 			return storehand!(deck, args[1], args[2:end])
+		elseif cmd == "U"
+			@assert length(args) == 1
+			return unstorequeue!(deck, args[1])
 		elseif cmd == "Q"
 			throw(InterruptException())
 		else
