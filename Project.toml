@@ -1,0 +1,7 @@
+name = "BalmIroned"
+uuid = "89747a61-b733-4d72-9986-d56f7fba6f8d"
+authors = ["Yu-Chang YANG <yang.yc.allium@gmail.com>"]
+version = "0.1.0"
+
+[compat]
+julia = "1"
