@@ -39,19 +39,24 @@ function Base.show(io::IO, ::MIME"text/oneline", card::Card)
 	n > 0 && print(io, ' ', "*" ^ n)
 end
 
+function cardexpr(card::Card)
+	n = star(card)
+	return "Card($(card.no),$(card.frs))" * "*"^n
+end
+
 function Base.show(io::IO, ::MIME"text/plain", card::Card)
 	isroundmarker(card) && 
 		return print(io, "End of Round $(card.frs+1)")
-	strs = ["$(name(card)) --- Card($(card.no),$(card.frs))"]
+	strs = ["$(name(card)) --- $(cardexpr(card))"]
 	isfinite(storecost(card)) && 
 		push!(strs, iszero(storecost(card)) ? 
 			"\t> Store $(storage(card)) for free" : 
 			"\t> Store $(storage(card)) by paying $(storecost(card))")
 	isfinite(rotatecost(card)) && 
-		push!(strs, "\t> Rotate to Card($(card.no),$(xor(2, card.frs))) " * 
+		push!(strs, "\t> Rotate to $(cardexpr(rotate(card))) " * 
 			"by paying $(rotatecost(card))")
 	isfinite(flipcost(card)) && 
-		push!(strs, "\t> Flip to Card($(card.no),$(xor(4, card.frs))) " * 
+		push!(strs, "\t> Flip to $(cardexpr(flip(card))) " * 
 			"by paying $(flipcost(card))")
 	push!(strs, "\t> Pass this card for free")
 	print(io, join(strs, '\n'))
