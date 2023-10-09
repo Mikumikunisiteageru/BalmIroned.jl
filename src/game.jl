@@ -39,6 +39,7 @@ function exec!(deck, cmd, args)
 		end
 	catch e
 		isa(e, InterruptException) && throw(e)
+		showerror(e)
 		println(HELPTEXT, '\n')
 		return waitcommand!(deck)
 	end

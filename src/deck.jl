@@ -106,6 +106,7 @@ function costcomb(cost::Storagez, deck::Deck)
 end
 
 function operatehand!(deck::Deck, operate, operatecost, hi, qii)
+	checkqueuetop!(deck)
 	@assert in(hi, 1:2)
 	cost = operatecost(deck.hands[hi])
 	@assert issubset(qii, 1:15)
@@ -118,7 +119,7 @@ function operatehand!(deck::Deck, operate, operatecost, hi, qii)
 	end
 	push!(deck.queue, operate(deck.hands[hi]))
 	deck.hands[hi] = popat!(deck.queue, 1)
-	return checkqueuetop!(deck)
+	return deck
 end
 
 function storehand!(deck::Deck, hi, qii=[])
@@ -131,10 +132,11 @@ rotatehand!(deck::Deck, hi, qii=[]) =
 fliphand!(deck::Deck, hi, qii=[]) = operatehand!(deck, flip, flipcost, hi, qii)
 
 function passhand!(deck::Deck, hi)
+	checkqueuetop!(deck)
 	@assert in(hi, 1:2)
 	push!(deck.queue, deck.hands[hi])
 	deck.hands[hi] = popat!(deck.queue, 1)
-	return checkqueuetop!(deck)
+	return deck
 end
 
 function unstorequeue!(deck::Deck, qi)
